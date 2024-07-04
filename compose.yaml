@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-bookworm
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: pump
+      POSTGRES_PASSWORD: pump
+      POSTGRES_DB: pump
+    volumes:
+      - data:/var/lib/postgresql/data
+
+  provider:
+    image: redbird9623/forecast-data-provider
+    depends_on:
+      - db
+
+  admin:
+    image: adminer
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+
+volumes:
+  data:
+
+networks:
+  pump-network:
+    driver: bridge

@@ -28,6 +28,11 @@ type ClientConfig struct {
 
 var config ClientConfig
 var workersNum uint
+var awsAccessKey string
+var awsSecretKey string
+var s3BucketName string
+var s3FileKey string
+var resetDB bool
 
 func ExecuteCommand(cliApp, node string, parts []string) ([]byte, error) {
 	if len(parts) == 0 {
@@ -111,13 +116,22 @@ func main() {
 	pflag.UintVar(&workersNum, "WORKERS_NUM", 5, "Number of workers to process blocks concurrently")
 	pflag.StringVar(&nodeFlag, "NODE", "https://allora-rpc.v2.testnet.allora.network:443", "Node address") //# https://default-node-address:443",
 	pflag.StringVar(&cliAppFlag, "CLIAPP", "allorad", "CLI app to execute commands")
-	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://pump:pump@localhost:5432/pump", "Database connection string")
+	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://pump:pump@localhost:5434/pump", "Database connection string")
+	pflag.StringVar(&awsAccessKey, "AWS_ACCESS_KEY", "", "AWS access key")
+	pflag.StringVar(&awsSecretKey, "AWS_SECURITY_KEY", "", "AWS security key")
+	pflag.StringVar(&s3BucketName, "S3_BUCKET_NAME", "m-indexer-backup", "AWS s3 bucket name")
+	pflag.StringVar(&s3FileKey, "S3_FILE_KEY", "dump-pump-202407040105.sql", "AWS s3 file key")
+	pflag.BoolVar(&resetDB, "RESET_DB", false, "AWS s3 file key")
 	pflag.Parse()
 
 	log.Info().
 		Uint("WORKERS_NUM", workersNum).
 		Str("NODE", nodeFlag).
 		Str("CONNECTION", connectionFlag).
+		Str("AWS_ACCESS_KEY", awsAccessKey).
+		Str("AWS_SECURITY_KEY", awsSecretKey).
+		Str("S3_BUCKET_NAME", s3BucketName).
+		Str("S3_BUCKET_NAME", s3FileKey).
 		Msg("provider started")
 
 	// define the commands to execute payloads
@@ -147,9 +161,14 @@ func main() {
 	}
 
 	// Init DB
-	initDB(connectionFlag)
+	initDB(connectionFlag, resetDB)
 	defer closeDB()
 
+	_, err := downloadBackupFromS3(context.Background())
+	if err != nil {
+		log.Log().Err(err).Msg("Failed restoring DB and start fetching blockchain data from scratch")
+		setupDB()
+	}
 	// Set a cancel context to stop the workers
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

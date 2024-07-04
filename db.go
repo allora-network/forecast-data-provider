@@ -70,7 +70,7 @@ const (
 
 var dbPool *pgxpool.Pool //*pgx.Conn
 
-func initDB(dataSourceName string) {
+func initDB(dataSourceName string, resetDB bool) {
 	var err error
 	// dbPool, err = pgx.Connect(context.Background(), dataSourceName)
 
@@ -84,7 +84,10 @@ func initDB(dataSourceName string) {
 		os.Exit(1)
 	}
 
-	setupDB()
+	if resetDB {
+		setupDB()
+	}
+
 }
 
 func closeDB() {

@@ -9,11 +9,30 @@ services:
       POSTGRES_DB: pump
     volumes:
       - data:/var/lib/postgresql/data
+    networks:
+      provider-network:
+        aliases:
+          - db
+        ipv4_address: 170.5.100.5
 
   provider:
-    image: redbird9623/forecast-data-provider
+    image: redbird9623/forecast:0.0.1
     depends_on:
       - db
+    entrypoint:
+    command:
+      - --WORKERS_NUM=10
+      - --NODE=https://allora-rpc.v2.testnet.allora.network:443
+      - --CONNECTION=postgres://pump:pump@170.5.100.5:5432/pump
+      - --AWS_ACCESS_KEY=
+      - --AWS_SECURITY_KEY=
+      - --S3_BUCKET_NAME=m-indexer-backup
+      - --S3_FILE_KEY=dump-pump-202407040105.sql
+    networks:
+      provider-network:
+        aliases:
+          - db
+        ipv4_address: 170.5.100.10
 
   admin:
     image: adminer
@@ -21,11 +40,14 @@ services:
     depends_on:
       - db
     ports:
-      - 8080:8080
+      - 8081:8080
 
 volumes:
   data:
 
 networks:
-  pump-network:
+  provider-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 170.5.100.0/24

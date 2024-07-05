@@ -116,7 +116,7 @@ func main() {
 	pflag.UintVar(&workersNum, "WORKERS_NUM", 5, "Number of workers to process blocks concurrently")
 	pflag.StringVar(&nodeFlag, "NODE", "https://allora-rpc.v2.testnet.allora.network:443", "Node address") //# https://default-node-address:443",
 	pflag.StringVar(&cliAppFlag, "CLIAPP", "allorad", "CLI app to execute commands")
-	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://pump:pump@localhost:5434/pump", "Database connection string")
+	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://pump:pump@localhost:5432/pump", "Database connection string")
 	pflag.StringVar(&awsAccessKey, "AWS_ACCESS_KEY", "", "AWS access key")
 	pflag.StringVar(&awsSecretKey, "AWS_SECURITY_KEY", "", "AWS security key")
 	pflag.StringVar(&s3BucketName, "S3_BUCKET_NAME", "m-indexer-backup", "AWS s3 bucket name")

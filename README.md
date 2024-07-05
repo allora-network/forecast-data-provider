@@ -18,6 +18,21 @@ Setup and Configuration
 
 Ensure the `allorad` application is configured correctly to connect to the Allora Chain node. The PostgreSQL database should be set up with the necessary tables and permissions for data storage. Modify the Go application's configuration to point to the correct database and node endpoints.
 
+Without any customization, simply set the following environment variables in `compose.yaml`:
+
+```bash
+- --AWS_ACCESS_KEY=
+- --AWS_SECURITY_KEY=
+```
+
+Set them using your AWS credentials.
+
+Then run:
+
+```bash
+docker compose up
+```
+
 Docker Commands
 -----------------------
 * WORKERS_NUM - Number of workers to process blocks concurrently (default is 5)

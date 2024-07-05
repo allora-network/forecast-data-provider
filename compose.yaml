@@ -21,7 +21,7 @@ services:
       - db
     entrypoint:
     command:
-      - --WORKERS_NUM=10
+      - --WORKERS_NUM=5
       - --NODE=https://allora-rpc.v2.testnet.allora.network:443
       - --CONNECTION=postgres://pump:pump@170.5.100.5:5432/pump
       - --AWS_ACCESS_KEY=

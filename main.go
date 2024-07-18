@@ -116,12 +116,12 @@ func main() {
 	pflag.UintVar(&workersNum, "WORKERS_NUM", 5, "Number of workers to process blocks concurrently")
 	pflag.StringVar(&nodeFlag, "NODE", "https://allora-rpc.v2.testnet.allora.network:443", "Node address") //# https://default-node-address:443",
 	pflag.StringVar(&cliAppFlag, "CLIAPP", "allorad", "CLI app to execute commands")
-	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://pump:pump@localhost:5432/pump", "Database connection string")
+	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://app:app@localhost:5432/app", "Database connection string")
 	pflag.StringVar(&awsAccessKey, "AWS_ACCESS_KEY", "", "AWS access key")
 	pflag.StringVar(&awsSecretKey, "AWS_SECURITY_KEY", "", "AWS security key")
-	pflag.StringVar(&s3BucketName, "S3_BUCKET_NAME", "m-indexer-backup", "AWS s3 bucket name")
-	pflag.StringVar(&s3FileKey, "S3_FILE_KEY", "dump-pump-202407040105.sql", "AWS s3 file key")
-	pflag.BoolVar(&resetDB, "RESET_DB", false, "AWS s3 file key")
+	pflag.StringVar(&s3BucketName, "S3_BUCKET_NAME", "allora-testnet-1-indexer-backups", "AWS s3 bucket name")
+	pflag.StringVar(&s3FileKey, "S3_FILE_KEY", "pgdump-20240718-02-33-09.sql.gz", "AWS s3 file key")
+	pflag.BoolVar(&resetDB, "RESET_DB", false, "Database reset flag")
 	pflag.Parse()
 
 	log.Info().
@@ -164,7 +164,7 @@ func main() {
 	initDB(connectionFlag, resetDB)
 	defer closeDB()
 
-	_, err := downloadBackupFromS3(context.Background())
+	_, err := downloadBackupFromS3()
 	if err != nil {
 		log.Log().Err(err).Msg("Failed restoring DB and start fetching blockchain data from scratch")
 		setupDB()

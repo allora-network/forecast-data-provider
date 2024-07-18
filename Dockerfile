@@ -24,6 +24,9 @@ RUN apt update && \
       perl-base && \
     rm -rf /var/cache/apt/*
 
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /
 # Detect the architecture and download the appropriate binary
 ARG TARGETARCH

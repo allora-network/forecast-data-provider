@@ -4,9 +4,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: pump
-      POSTGRES_PASSWORD: pump
-      POSTGRES_DB: pump
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
     volumes:
       - data:/var/lib/postgresql/data
     networks:
@@ -23,11 +23,11 @@ services:
     command:
       - --WORKERS_NUM=5
       - --NODE=https://allora-rpc.v2.testnet.allora.network:443
-      - --CONNECTION=postgres://pump:pump@170.5.100.5:5432/pump
+      - --CONNECTION=postgres://app:app@170.5.100.5:5432/app
       - --AWS_ACCESS_KEY=
       - --AWS_SECURITY_KEY=
-      - --S3_BUCKET_NAME=m-indexer-backup
-      - --S3_FILE_KEY=dump-pump-202407040105.sql
+      - --S3_BUCKET_NAME=allora-testnet-1-indexer-backups
+      - --S3_FILE_KEY=pgdump-20240718-06-33-09.sql.gz
     networks:
       provider-network:
         aliases:

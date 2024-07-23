@@ -24,7 +24,7 @@ func downloadBackupFromS3() (string, error) {
 
 	s3Client := s3.New(sess)
 
-	tempFile, err := ioutil.TempFile("", "backup-*.sql.gz")
+	tempFile, err := ioutil.TempFile("", "backup-*.dump.gz")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary file: %v", err)
 	}
@@ -62,25 +62,31 @@ func gunzipFile(src string) error {
 		return fmt.Errorf("failed to run gunzip command: %v", err)
 	}
 
-	log.Info().Msg("SQL file extracted.")
+	log.Info().Msg("DUMP file extracted.")
 	return nil
 }
 
 func restoreBackupToDB(filePath string) error {
 
-	connStr := fmt.Sprintf("host=%s port=%d dbname=%s user=%s password=%s sslmode=disable",
-		dbPool.Config().ConnConfig.Host, dbPool.Config().ConnConfig.Port,
-		dbPool.Config().ConnConfig.Database, dbPool.Config().ConnConfig.User, dbPool.Config().ConnConfig.Password)
+	cmd := exec.Command(
+		"pg_restore",
+		"-h", dbPool.Config().ConnConfig.Host,
+		"-p", fmt.Sprintf("%d", dbPool.Config().ConnConfig.Port),
+		"-U", dbPool.Config().ConnConfig.User,
+		"-d", dbPool.Config().ConnConfig.Database,
+		"-j", fmt.Sprintf("%d", parallelJobs),
+		"-v", filePath,
+	)
+	cmd.Env = append(os.Environ(), "PGPASSWORD="+dbPool.Config().ConnConfig.Password)
 
-	cmd := exec.Command("psql", connStr)
-	cmd.Stdin, _ = os.Open(filePath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
 	if err := cmd.Run(); err != nil {
-		log.Err(err).Msg("Failed to run psql command")
+		log.Err(err).Msg("Failed to run pg_restore command")
 		return err
 	}
 
-	log.Info().Msg("Restored DB from SQL")
+	log.Info().Msg("Restored DB from DUMP")
 	return nil
 }

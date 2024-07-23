@@ -43,3 +43,4 @@ Docker Commands
 * S3_BUCKET_NAME - AWS s3 bucket name
 * S3_FILE_KEY - AWS s3 file(SQL backup file) key
 * RESET_DB - Flag for restarting database
+* RESTORE_PARALLEL_JOBS - Number of operations for parallel restore

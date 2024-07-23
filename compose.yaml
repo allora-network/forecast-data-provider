@@ -26,8 +26,8 @@ services:
       - --CONNECTION=postgres://app:app@170.5.100.5:5432/app
       - --AWS_ACCESS_KEY=
       - --AWS_SECURITY_KEY=
-      - --S3_BUCKET_NAME=m-indexer-backup
-      - --S3_FILE_KEY=test2.dump.gz
+      - --S3_BUCKET_NAME=allora-testnet-1-indexer-backups
+      - --S3_FILE_KEY=pgdump-20240723-20-47-11.dump.gz
     networks:
       provider-network:
         aliases:

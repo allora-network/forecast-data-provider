@@ -24,7 +24,7 @@ func downloadBackupFromS3() (string, error) {
 
 	s3Client := s3.New(sess)
 
-	tempFile, err := ioutil.TempFile("", "backup-*.dump.gz")
+	tempFile, err := ioutil.TempFile("", "backup-*.dump")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary file: %v", err)
 	}
@@ -45,11 +45,7 @@ func downloadBackupFromS3() (string, error) {
 	}
 	fileName := tempFile.Name()
 
-	err = gunzipFile(fileName)
-	if err != nil {
-		return "", fmt.Errorf("failed to extract file: %v", err)
-	}
-	_ = restoreBackupToDB(fileName[:len(fileName)-3])
+	_ = restoreBackupToDB(fileName)
 	return tempFile.Name(), nil
 }
 

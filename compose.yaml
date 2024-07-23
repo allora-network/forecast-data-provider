@@ -27,7 +27,7 @@ services:
       - --AWS_ACCESS_KEY=
       - --AWS_SECURITY_KEY=
       - --S3_BUCKET_NAME=allora-testnet-1-indexer-backups
-      - --S3_FILE_KEY=pgdump-20240723-20-47-11.dump.gz
+      - --S3_FILE_KEY=pgdump-20240723-21-53-11.dump
     networks:
       provider-network:
         aliases:

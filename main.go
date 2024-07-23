@@ -121,7 +121,7 @@ func main() {
 	pflag.StringVar(&awsAccessKey, "AWS_ACCESS_KEY", "", "AWS access key")
 	pflag.StringVar(&awsSecretKey, "AWS_SECURITY_KEY", "", "AWS security key")
 	pflag.StringVar(&s3BucketName, "S3_BUCKET_NAME", "allora-testnet-1-indexer-backups", "AWS s3 bucket name")
-	pflag.StringVar(&s3FileKey, "S3_FILE_KEY", "test2.dump.gz", "AWS s3 file key")
+	pflag.StringVar(&s3FileKey, "S3_FILE_KEY", "pgdump-20240723-21-53-11.dump", "AWS s3 file key")
 	pflag.BoolVar(&resetDB, "RESET_DB", false, "Database reset flag")
 	pflag.UintVar(&parallelJobs, "RESTORE_PARALLEL_JOBS", 4, "Database reset flag")
 	pflag.Parse()

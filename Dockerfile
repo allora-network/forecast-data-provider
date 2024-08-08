@@ -30,13 +30,20 @@ RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/ap
 WORKDIR /
 # Detect the architecture and download the appropriate binary
 ARG TARGETARCH
+
+RUN mkdir -p /usr/local/bin/previous/v2
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
-        curl -L https://github.com/allora-network/allora-chain/releases/download/v0.2.11/allorad_linux_arm64 -o /usr/local/bin/allorad; \
+        curl -L https://github.com/allora-network/allora-chain/releases/download/v0.2.11/allorad_linux_arm64 -o /usr/local/bin/previous/v2/allorad; \
+        curl -L https://github.com/allora-network/allora-chain/releases/download/v0.3.0/allorad_linux_arm64 -o /usr/local/bin/allorad; \
     else \
-        curl -L https://github.com/allora-network/allora-chain/releases/download/v0.2.11/allorad_linux_amd64 -o /usr/local/bin/allorad; \
+        curl -L https://github.com/allora-network/allora-chain/releases/download/v0.2.11/allorad_linux_amd64 -o /usr/local/bin/previous/v2/allorad; \
+        curl -L https://github.com/allora-network/allora-chain/releases/download/v0.3.0/allorad_linux_amd64 -o /usr/local/bin/allorad; \
     fi
 
 RUN chmod -R 777 /usr/local/bin/allorad
+RUN chmod -R 777 /usr/local/bin/previous/v2/allorad
+
 COPY --from=gobuilder forecast-data-provider /usr/local/bin/forecast-data-provider
+WORKDIR /usr/local/bin
 # EXPOSE 8080
 ENTRYPOINT ["forecast-data-provider"]

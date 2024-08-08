@@ -1,11 +1,13 @@
 package main
 
 import (
+	"allora-network/forecast-data-provider/types"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -104,6 +106,37 @@ func ExecuteCommandByKey[T any](config ClientConfig, key string, params ...strin
 	return result, nil
 }
 
+func DecodeTx(config ClientConfig, params string) (types.Tx, error) {
+	var result types.Tx
+
+	result, err := ExecuteCommandByKey[types.Tx](config, "decodeTx", params)
+	if err == nil {
+		return result, nil
+	}
+
+	dir, err := os.Getwd()
+	if err != nil {
+		return types.Tx{}, err
+	}
+	root := filepath.Join(dir, "previous")
+	err = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && d.Name() == "allorad" {
+			fmt.Println("Trying decode with file:", path)
+			config.CliApp = path
+			decodeTx, err := ExecuteCommandByKey[types.Tx](config, "decodeTx", params)
+			if err == nil {
+				result = decodeTx
+			}
+		}
+		return nil
+	})
+
+	return result, err
+}
+
 func main() {
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -115,9 +148,9 @@ func main() {
 	)
 
 	pflag.UintVar(&workersNum, "WORKERS_NUM", 5, "Number of workers to process blocks concurrently")
-	pflag.StringVar(&nodeFlag, "NODE", "https://allora-rpc.v2.testnet.allora.network:443", "Node address") //# https://default-node-address:443",
+	pflag.StringVar(&nodeFlag, "NODE", "https://allora-rpc.devnet.behindthecurtain.xyz", "Node address") //# https://default-node-address:443",
 	pflag.StringVar(&cliAppFlag, "CLIAPP", "allorad", "CLI app to execute commands")
-	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://app:app@localhost:5432/app", "Database connection string")
+	pflag.StringVar(&connectionFlag, "CONNECTION", "postgres://app:app@localhost:5433/app", "Database connection string")
 	pflag.StringVar(&awsAccessKey, "AWS_ACCESS_KEY", "", "AWS access key")
 	pflag.StringVar(&awsSecretKey, "AWS_SECURITY_KEY", "", "AWS security key")
 	pflag.StringVar(&s3BucketName, "S3_BUCKET_NAME", "allora-testnet-1-indexer-backups", "AWS s3 bucket name")

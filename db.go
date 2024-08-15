@@ -3,6 +3,7 @@ package main
 import (
 	"allora-network/forecast-data-provider/types"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -142,7 +143,8 @@ func createMessagesTablesSQL() string {
 		type VARCHAR(255),
 		sender VARCHAR(255),
 		data JSONB,
-		CONSTRAINT "messages_height_data" UNIQUE ("height", "data")
+    	data_hash BYTEA,
+    	CONSTRAINT "messages_height_data_hash" UNIQUE ("height", "data_hash")
 	);
 
 	CREATE TABLE IF NOT EXISTS ` + TB_TOPICS + ` (
@@ -313,7 +315,8 @@ func createEventsTablesSQL() string {
 		type VARCHAR(255),
 		sender VARCHAR(255),
 		data JSONB,
-		CONSTRAINT "events_height_data" UNIQUE ("height", "data")
+    	data_hash BYTEA,
+		CONSTRAINT "events_height_data_hash" UNIQUE ("height", "data_hash")
 	);
 
 
@@ -416,17 +419,21 @@ func insertBlockInfo(blockInfo DBBlockInfo) error {
 func insertMessage(height uint64, mtype string, sender string, data string) (uint64, error) {
 	// Write Topic to the database
 	var id uint64
+	dataHash := sha256.Sum256([]byte(data))
+
 	err := dbPool.QueryRow(context.Background(), `
 		INSERT INTO `+TB_MESSAGES+` (
 			height,
 			type,
 			sender,
-			data
-		) VALUES ($1, $2, $3, $4) RETURNING id`,
+			data,
+			data_hash
+		) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
 		height,
 		mtype,
 		sender,
 		data,
+		dataHash[:],
 	).Scan(&id)
 	if err != nil {
 		return 0, err
@@ -460,10 +467,12 @@ func insertEvents(events []EventRecord) error {
 		if err != nil {
 			return err
 		}
+		dataHash := sha256.Sum256(data)
+
 		_, err = dbPool.Exec(context.Background(), `
-			INSERT INTO `+TB_EVENTS+` (height, type, sender, data) VALUES ($1, $2, $3, $4) 
-			ON CONFLICT (height, data) DO NOTHING`,
-			event.Height, event.Type, event.Sender, data)
+			INSERT INTO `+TB_EVENTS+` (height, type, sender, data, data_hash) VALUES ($1, $2, $3, $4, $5) 
+			ON CONFLICT (height, data_hash) DO NOTHING`,
+			event.Height, event.Type, event.Sender, data, dataHash[:])
 		if err != nil {
 			return fmt.Errorf("event insert failed: %v", err)
 		}
